@@ -170,11 +170,45 @@ class TheMovieDb
     {
         $this->imdbid = self::imdb_id();
 
+        preg_match_all('#<span class="small" itemprop="ratingCount">(.*)</span>#', self::request($this->imdbid . '/', true), $RatingCount);
         preg_match_all('#<span itemprop="ratingValue">(.*)</span>#', self::request($this->imdbid . '/', true), $Result);
         $this->imdb_rating = explode('/', strip_Tags($Result[0][0]))[0];
         $this->imdb_bestRating = explode('/', strip_Tags($Result[0][0]))[1];
-        return json_decode(json_encode(array('Rating' => $this->imdb_rating, 'BestRating' => $this->imdb_bestRating)));
+        $this->imdb_ratingCount = $RatingCount[1][0];
+        return json_decode(json_encode(array('Rating' => $this->imdb_rating, 'BestRating' => $this->imdb_bestRating, 'RatingTotalUserCount' => $this->imdb_ratingCount)));
     }
+
+    /**
+     * @return mixed
+     */
+    public function cast()
+    {
+        //  https://api.themoviedb.org/3/tv/{tv_id}/credits?api_key={API_KEY}&language=tr
+        return $MovResult = json_decode($this->request($this->Mov_type . '/' . $this->Mov_id . '/credits?api_key=' . $this->API_KEY . '&language=tr'))->cast;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function recommendations()
+    {
+        //  https://api.themoviedb.org/3/movie/{movie_id}/recommendations?api_key={API_KEY}&language=tr&page=1
+        return $MovResult = json_decode($this->request($this->Mov_type . '/' . $this->Mov_id . '/recommendations?api_key=' . $this->API_KEY . '&language=tr&page=1'))->results;
+    }
+
+    /**
+     * @return null
+     */
+    public function seasons()
+    {
+        if ($this->Mov_type == 'tv') {
+            //https://api.themoviedb.org/3/tv/1396?api_key={API_KEY}&language=tr
+            return $MovResult = json_decode($this->request('tv/' . $this->Mov_id . '?api_key=' . $this->API_KEY . '&language=tr'))->seasons;
+        } else {
+            return null;
+        }
+    }
+
 
     /**
      * @return mixed
@@ -227,7 +261,7 @@ class TheMovieDb
             $this->Seasons = null;
         }
 
-        $this->imdb_ranked();
+
         return json_decode(json_encode(
             array(
                 'Mov_id' => $this->Mov_id,
@@ -238,47 +272,13 @@ class TheMovieDb
                 'Mov_overview' => $this->Mov_overview,
                 'Mov_poster_path' => $this->Mov_poster_path,
                 'Mov_images' => $this->Mov_images,
-                'imdb' => array(
-                    'Rating' => $this->imdb_rating,
-                    'BestRating' => $this->imdb_bestRating,
-                ),
+                'imdb' => $this->imdb_ranked(),
                 'Seasons' => $this->Seasons,
                 'Cast' => $this->Cast,
                 'Recommendations' => $this->Recommendations
 
             )
         ));
-    }
-
-    /**
-     * @return mixed
-     */
-    public function cast()
-    {
-        //	https://api.themoviedb.org/3/tv/{tv_id}/credits?api_key={API_KEY}&language=tr
-        return $MovResult = json_decode($this->request($this->Mov_type . '/' . $this->Mov_id . '/credits?api_key=' . $this->API_KEY . '&language=tr'))->cast;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function recommendations()
-    {
-        //	https://api.themoviedb.org/3/movie/{movie_id}/recommendations?api_key={API_KEY}&language=tr&page=1
-        return $MovResult = json_decode($this->request($this->Mov_type . '/' . $this->Mov_id . '/recommendations?api_key=' . $this->API_KEY . '&language=tr&page=1'))->results;
-    }
-
-    /**
-     * @return null
-     */
-    public function seasons()
-    {
-        if ($this->Mov_type == 'tv') {
-            //https://api.themoviedb.org/3/tv/1396?api_key={API_KEY}&language=tr
-            return $MovResult = json_decode($this->request('tv/' . $this->Mov_id . '?api_key=' . $this->API_KEY . '&language=tr'))->seasons;
-        } else {
-            return null;
-        }
     }
 
     /**
@@ -335,5 +335,4 @@ class TheMovieDb
         }
     }
 }
-
 ?>
