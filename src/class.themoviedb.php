@@ -175,7 +175,7 @@ class TheMovieDb
         $this->imdb_rating = explode('/', strip_Tags($Result[0][0]))[0];
         $this->imdb_bestRating = explode('/', strip_Tags($Result[0][0]))[1];
         $this->imdb_ratingCount = $RatingCount[1][0];
-        return json_decode(json_encode(array('Rating' => $this->imdb_rating, 'BestRating' => $this->imdb_bestRating, 'RatingTotalUserCount' => $this->imdb_ratingCount)));
+        return json_decode(json_encode(array('Imdbid' => $this->imdbid, 'Rating' => $this->imdb_rating, 'BestRating' => $this->imdb_bestRating, 'RatingTotalUserCount' => $this->imdb_ratingCount)));
     }
 
     /**
