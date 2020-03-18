@@ -17,9 +17,9 @@ class TheMovieDb
     private $folder = null;
     private $name = null;
     private $API_KEY = null;
+    private $language = 'tr';
     const    API_URL = 'https://api.themoviedb.org/3/';
     const    IMDB_URL = 'https://www.imdb.com/title/';
-
     /**
      * TheMovieDb constructor.
      * @param $API_KEY
@@ -46,6 +46,7 @@ class TheMovieDb
     public function settings($API_KEY)
     {
         $this->API_KEY = $API_KEY;
+        
         if (empty($this->API_KEY)) {
             return
                 json_decode(json_encode(
@@ -142,13 +143,17 @@ class TheMovieDb
             else if (!empty($MovResult->results[0]->original_title))
                 $this->Mov_name = $MovResult->results[0]->original_title;
 
-            $this->Mov_type = $MovResult->results[0]->media_type;
+           if (!empty($MovResult->results[0]->original_name))
+                $this->Movie_original_name = $MovResult->results[0]->original_name;
+            else
+                $this->Movie_original_name = null;
 
             if (!empty($MovResult->results[0]->first_air_date))
                 $this->Mov_date = $MovResult->results[0]->first_air_date;
             else if (!empty($MovResult->results[0]->release_date))
                 $this->Mov_date = $MovResult->results[0]->release_date;
 
+            $this->Mov_type = $MovResult->results[0]->media_type;
             $this->Mov_overview = $MovResult->results[0]->overview;
             $this->Mov_poster_path = $MovResult->results[0]->poster_path;
             $this->Mov_images = 'https://image.tmdb.org/t/p/original' . $MovResult->results[0]->poster_path;
@@ -175,7 +180,7 @@ class TheMovieDb
     {
         //https://api.themoviedb.org/3/movie/{tv_id}?api_key={API_KEY}&language=tr
         if (!empty($this->Mov_id))
-            return $Mov_details = json_decode($this->request($this->Mov_type . '/' . $this->Mov_id . '?api_key=' . $this->API_KEY . '&language=tr'))->genres;
+            return $Mov_details = json_decode($this->request($this->Mov_type . '/' . $this->Mov_id . '?api_key=' . $this->API_KEY . '&language=' . $this->language))->genres;
     }
 
     /**
@@ -214,7 +219,7 @@ class TheMovieDb
     {
         if (!empty($this->Mov_id))
             //  https://api.themoviedb.org/3/tv/{tv_id}/credits?api_key={API_KEY}&language=tr
-            return $MovResult = json_decode($this->request($this->Mov_type . '/' . $this->Mov_id . '/credits?api_key=' . $this->API_KEY . '&language=tr'))->cast;
+            return $MovResult = json_decode($this->request($this->Mov_type . '/' . $this->Mov_id . '/credits?api_key=' . $this->API_KEY . '&language=' . $this->language))->cast;
     }
 
     /**
@@ -224,7 +229,7 @@ class TheMovieDb
     {
         if (!empty($this->Mov_id))
             //https://api.themoviedb.org/3/movie/{movie_id}/recommendations?api_key={API_KEY}&language=tr&page=1
-            return $MovResult = json_decode($this->request($this->Mov_type . '/' . $this->Mov_id . '/recommendations?api_key=' . $this->API_KEY . '&language=tr&page=1'))->results;
+            return $MovResult = json_decode($this->request($this->Mov_type . '/' . $this->Mov_id . '/recommendations?api_key=' . $this->API_KEY . '&language=' . $this->language . '&page=1'))->results;
     }
 
     /**
@@ -235,7 +240,7 @@ class TheMovieDb
         if (!empty($this->Mov_id)) {
             if ($this->Mov_type == 'tv') {
                 //https://api.themoviedb.org/3/tv/1396?api_key={API_KEY}&language=tr
-                return $MovResult = json_decode($this->request('tv/' . $this->Mov_id . '?api_key=' . $this->API_KEY . '&language=tr'))->seasons;
+                return $MovResult = json_decode($this->request('tv/' . $this->Mov_id . '?api_key=' . $this->API_KEY . '&language=' . $this->language))->seasons;
             } else {
                 return null;
             }
@@ -319,6 +324,7 @@ class TheMovieDb
                     'Movie_id' => $this->Mov_id,
                     'Movie_name' => $this->Mov_name,
                     'Movie_title' => $this->Mov_title,
+                    'Movie_original_name' => $this->Movie_original_name,
                     'Movie_type' => $this->Mov_type,
                     'Movie_date' => $this->Mov_date,
                     'Movie_overview' => $this->Mov_overview,

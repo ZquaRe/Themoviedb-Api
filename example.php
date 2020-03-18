@@ -8,12 +8,12 @@ $MovieDB = new TheMovieDb('API_KEY');
 $MovieDB->settings('API_KEY'); //Optional
 
 //Movie / Series Search
-$Search = $MovieDB->search('El Camino:');
+$Search = $MovieDB->search('El Camino:','en'); //When this field is left blank, it brings Turkish data by default.
 
 //Error Status
 if (isset(($Search->status))) {
 //Print error messages
-    echo json_encode($Search);
+	echo json_encode($Search);
 }
 
 //Download Pictures
