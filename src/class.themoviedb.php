@@ -8,7 +8,7 @@
 
 /*
 WARNING:
-It pulls data from imdb.com, this process will slow its the system operation.
+It pulls some data from imdb.com, this process will slow its the system operation.
 */
 
 class TheMovieDb
@@ -29,14 +29,14 @@ class TheMovieDb
         $this->API_KEY = $API_KEY;
 
         if (empty($this->API_KEY)) {
-            echo
-            json_encode(
-                array(
-                    'status' => 'error',
-                    'description' => 'API Key Not Found',
-                    'class' => get_class($this),
-                    'function' => __FUNCTION__)
-            );
+            return
+                json_decode(json_encode(
+                    array(
+                        'status' => 'error',
+                        'description' => 'API Key Not Found',
+                        'class' => get_class($this),
+                        'function' => __FUNCTION__)
+                ));
         }
     }
 
@@ -47,14 +47,14 @@ class TheMovieDb
     {
         $this->API_KEY = $API_KEY;
         if (empty($this->API_KEY)) {
-            echo
-            json_encode(
-                array(
-                    'status' => 'error',
-                    'description' => 'API Key Not Found',
-                    'class' => get_class($this),
-                    'function' => __FUNCTION__)
-            );
+            return
+                json_decode(json_encode(
+                    array(
+                        'status' => 'error',
+                        'description' => 'API Key Not Found',
+                        'class' => get_class($this),
+                        'function' => __FUNCTION__)
+                ));
         }
 
     }
@@ -156,17 +156,26 @@ class TheMovieDb
             return $MovResult;
         } else {
             $this->Mov_images = null;
-            echo json_encode(
+            return json_decode(json_encode(
                 array(
                     'status' => 'error',
                     'description' => 'Movie or TV Series not found',
-                    'Url' => $this->url,
                     'class' => get_class($this),
                     'function' => __FUNCTION__
                 )
-            );
+            ));
         }
 
+    }
+
+    /**
+     * @return mixed
+     */
+    public function genres()
+    {
+        //https://api.themoviedb.org/3/movie/{tv_id}?api_key={API_KEY}&language=tr
+        if (!empty($this->Mov_id))
+            return $Mov_details = json_decode($this->request($this->Mov_type . '/' . $this->Mov_id . '?api_key=' . $this->API_KEY . '&language=tr'))->genres;
     }
 
     /**
@@ -206,7 +215,6 @@ class TheMovieDb
         if (!empty($this->Mov_id))
             //  https://api.themoviedb.org/3/tv/{tv_id}/credits?api_key={API_KEY}&language=tr
             return $MovResult = json_decode($this->request($this->Mov_type . '/' . $this->Mov_id . '/credits?api_key=' . $this->API_KEY . '&language=tr'))->cast;
-
     }
 
     /**
@@ -215,7 +223,7 @@ class TheMovieDb
     public function recommendations()
     {
         if (!empty($this->Mov_id))
-            //  https://api.themoviedb.org/3/movie/{movie_id}/recommendations?api_key={API_KEY}&language=tr&page=1
+            //https://api.themoviedb.org/3/movie/{movie_id}/recommendations?api_key={API_KEY}&language=tr&page=1
             return $MovResult = json_decode($this->request($this->Mov_type . '/' . $this->Mov_id . '/recommendations?api_key=' . $this->API_KEY . '&language=tr&page=1'))->results;
     }
 
@@ -254,6 +262,14 @@ class TheMovieDb
             }
 
 
+            foreach (self::genres() as $genres) {
+
+                $this->Genres[] = array(
+                    'Genres_id' => $genres->id,
+                    'Genres_name' => $genres->name
+                );
+            }
+
             foreach (self::recommendations() as $recommendations) {
                 if (!empty($recommendations->original_title)) $recommendations->original_title = $recommendations->original_title; else $recommendations->original_title = $recommendations->name;
                 if (!empty($recommendations->release_date)) $recommendations->release_date = $recommendations->release_date; else $recommendations->release_date = null;
@@ -287,7 +303,16 @@ class TheMovieDb
             }
 
             if (empty($this->Recommendations)) $this->Recommendations = null;
-
+            if (empty($this->Mov_name)) $this->Mov_name = null;
+            if (empty($this->Mov_title)) $this->Mov_title = null;
+            if (empty($this->Mov_type)) $this->Mov_type = null;
+            if (empty($this->Mov_date)) $this->Mov_date = null;
+            if (empty($this->Mov_overview)) $this->Mov_overview = null;
+            if (empty($this->Mov_poster_path)) $this->Mov_poster_path = null;
+            if (empty($this->Mov_images)) $this->Mov_images = null;
+            if (empty($this->Genres)) $this->Genres = null;
+            if (empty($this->Cast)) $this->Cast = null;
+            if (empty($this->Recommendations)) $this->Recommendations = null;
 
             return json_decode(json_encode(
                 array(
@@ -299,6 +324,7 @@ class TheMovieDb
                     'Movie_overview' => $this->Mov_overview,
                     'Movie_poster_path' => $this->Mov_poster_path,
                     'Movie_images' => $this->Mov_images,
+                    'Genres' => $this->Genres,
                     'Imdb' => $this->imdb_ranked(),
                     'Seasons' => $this->Seasons,
                     'Cast' => $this->Cast,
@@ -315,8 +341,7 @@ class TheMovieDb
      * @param null $name
      * @return string
      */
-    public
-    function fileDownload($url, $folder, $name = null)
+    public function fileDownload($url, $folder, $name = null)
     {
         $this->url = $url;
         $this->folder = $folder;
@@ -335,14 +360,14 @@ class TheMovieDb
                         copy($this->url, $this->folder . '/' . $this->imageName);
                     }
                 } else {
-                    return json_encode(
+                    return json_decode(json_encode(
                         array(
                             'status' => 'error',
                             'description' => 'Folder not found',
                             'folder' => $this->folder,
                             'class' => get_class($this),
                             'function' => __FUNCTION__)
-                    );
+                    ));
                 }
             } else {
                 if (!empty($this->name)) {
@@ -352,7 +377,7 @@ class TheMovieDb
                 }
             }
         } else {
-            return json_encode(
+            return json_decode(json_encode(
                 array(
                     'status' => 'error',
                     'description' => 'File not available on remote server',
@@ -360,7 +385,7 @@ class TheMovieDb
                     'class' => get_class($this),
                     'function' => __FUNCTION__
                 )
-            );
+            ));
         }
     }
 }
