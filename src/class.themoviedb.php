@@ -296,6 +296,7 @@ class TheMovieDb
                         'release_date' => $seasons->air_date,
                         'episode_count' => $seasons->episode_count,
                         'season_id' => $seasons->id,
+                        'season_name' => $seasons->name,
                         'overview' => $seasons->overview,
                         'poster_path' => $seasons->poster_path,
                         'poster_image' => 'https://image.tmdb.org/t/p/original' . $seasons->poster_path,
